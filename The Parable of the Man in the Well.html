@@ -90,6 +90,18 @@
     </header>
 
     <main class="container mx-auto px-6 py-8 max-w-4xl bg-white rounded-lg shadow-md mb-12">
+        <!-- Podcast Audio Player Section -->
+        <section class="mb-12 text-center">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Listen to the Podcast</h2>
+            <div class="flex justify-center">
+                <audio controls class="w-full max-w-md">
+                    <!-- Replace 'your-podcast-audio.mp3' with the actual path to your audio file on GitHub Pages -->
+                    <source src="podcast of well dream.mp3" type="audio/mpeg">
+                    Your browser does not support the audio element.
+                </audio>
+            </div>
+        </section>
+
         <section id="intro" class="mb-12">
             <h2 class="text-3xl font-bold text-gray-800 mb-4">Introduction: A Dream's Resonance</h2>
             <p class="text-lg text-gray-700 mb-6">
@@ -146,12 +158,11 @@
         <section id="comparison" class="mb-12 bg-amber-50/20 p-8 rounded-lg">
             <h2 class="text-3xl font-bold text-gray-800 mb-4">A Global Perspective: Variations in Interpretation</h2>
             <p class="text-lg text-gray-700 mb-6">
-                While the core elements of the parable remain constant, their symbolic meanings subtly shift across different cultures and religious traditions. This adaptability is what gives the story its incredible longevity and universal appeal. Use the dropdown below to compare how various traditions—from your described dream to Buddhist, Hindu, Islamic, and Christian teachings—interpret the parable's profound message.
+                While the core elements of the parable remain constant, their symbolic meanings subtly shift across different cultures and religious traditions. This adaptability is what gives the story its incredible longevity and universal appeal. Use the dropdown below to compare how various traditions—from Buddhist, Hindu, Islamic, and Christian teachings—interpret the parable's profound message.
             </p>
 
             <div class="flex justify-center mb-8">
                 <select id="tradition-selector" class="block w-full max-w-xs p-3 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500">
-                    <option value="dream">Your Described Dream</option>
                     <option value="buddhist">Buddhist Interpretation</option>
                     <option value="hindu">Hindu Interpretation</option>
                     <option value="islamic">Islamic Interpretation</option>
@@ -224,17 +235,6 @@
         };
 
         const comparisonData = {
-            dream: {
-                title: 'Your Described Dream Interpretation',
-                data: {
-                    'Chasing Beast': 'Fate to get born',
-                    'Well/Pit': 'A literal well',
-                    'Rope/Root': 'Lifetime',
-                    'Rats': 'Day and night',
-                    'Snake/Dragon': 'Death',
-                    'Honey': 'Distractions in life'
-                }
-            },
             buddhist: {
                 title: 'Buddhist Interpretation',
                 data: {
@@ -313,7 +313,7 @@
                 const chartLabels = [];
                 const chartDataPoints = [];
 
-                for (const [key, value] of Object.entries(tradition.data)) { // Changed `=>` to `of`
+                for (const [key, value] of Object.entries(tradition.data)) {
                     textHtml += `<p><strong>${key}:</strong> ${value}</p>`;
                     chartLabels.push(key);
                     chartDataPoints.push(value); 
@@ -416,8 +416,8 @@
             }
             
             traditionSelector.addEventListener('change', (e) => updateComparison(e.target.value));
-            // Initialize with the 'Your Described Dream' interpretation on load
-            updateComparison('dream');
+            // Initialize with the 'islamic' interpretation on load
+            updateComparison('islamic');
             
             // Simplified navigation for a blog post (internal links, not sticky)
             const navLinks = document.querySelectorAll('a[href^="#"]'); // Select all internal anchor links
