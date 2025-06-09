@@ -163,9 +163,9 @@
 
             <div class="flex justify-center mb-8">
                 <select id="tradition-selector" class="block w-full max-w-xs p-3 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500">
+                    <option value="islamic">Islamic Interpretation</option>
                     <option value="buddhist">Buddhist Interpretation</option>
                     <option value="hindu">Hindu Interpretation</option>
-                    <option value="islamic">Islamic Interpretation</option>
                     <option value="christian">Christian Interpretation</option>
                 </select>
             </div>
@@ -235,6 +235,17 @@
         };
 
         const comparisonData = {
+            islamic: {
+                title: 'Islamic Interpretation',
+                data: {
+                    'Chasing Beast': 'Angel of Death',
+                    'Well/Pit': 'A literal well',
+                    'Rope/Root': 'Life',
+                    'Rats': 'Night and day eating time',
+                    'Snake/Dragon': 'The grave',
+                    'Honey': 'Luxuries of this world'
+                }
+            },
             buddhist: {
                 title: 'Buddhist Interpretation',
                 data: {
@@ -255,17 +266,6 @@
                     'Rats': 'Night and day reducing age',
                     'Snake/Dragon': 'Time / Obstacles',
                     'Honey': 'Worldly pleasures'
-                }
-            },
-            islamic: {
-                title: 'Islamic Interpretation',
-                data: {
-                    'Chasing Beast': 'Angel of Death',
-                    'Well/Pit': 'A literal well',
-                    'Rope/Root': 'Life',
-                    'Rats': 'Night and day eating time',
-                    'Snake/Dragon': 'The grave',
-                    'Honey': 'Luxuries of this world'
                 }
             },
             christian: {
