@@ -3,19 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Parable of the Man in the Well: An Interactive Exploration</title>
+    <title>The Parable of the Man in the Well: A Blog-Ready Interactive Exploration</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
     <!-- Chosen Palette: Warm Neutrals -->
-    <!-- Application Structure Plan: The application is structured into thematic, full-screen sections to guide the user through a narrative journey. It begins with an introduction, moves to an interactive breakdown of the core parable's symbols, then presents the main interactive feature: a comparative analysis chart. This is followed by a visual timeline of the parable's transmission and a concluding summary. This non-linear, thematic structure was chosen over a direct report-to-page conversion to enhance user engagement and facilitate understanding. By allowing users to explore concepts out of order and interact directly with the data (e.g., filtering the comparison chart), it transforms passive reading into active discovery. The sticky navigation ensures users can easily move between these distinct exploratory sections at any time. -->
+    <!-- Application Structure Plan: The application is structured as a linear, scrollable blog post, optimizing content for readability and ease of consumption within a typical blog layout. It flows from an introduction to an interactive breakdown of the core parable's symbols, then presents a comparative analysis with a dynamic chart, followed by a visual timeline of the parable's transmission, and concludes with a summary. This linear structure is chosen to mirror the reading experience of a blog post, while retaining interactive elements (symbol detail reveal, dynamic chart updates) to enhance engagement without breaking the flow. The sticky header ensures continuous branding and title visibility. -->
     <!-- Visualization & Content Choices: 
-        1. Core Parable Elements: Goal=Inform. Method=Interactive HTML/CSS diagram. Interaction=Clicking an element reveals its description. Justification=Visually represents the scene, more engaging than a list.
-        2. Comparative Analysis: Goal=Compare. Method=Chart.js Radar Chart. Interaction=Dropdown menu to select a tradition, dynamically updating the chart and a detailed text panel. Justification=Radar charts excel at showing multivariate data, making it easy to see how the symbolic "profile" of one tradition compares to another across all elements simultaneously. This is more powerful than a simple table for discovering patterns. Library=Chart.js.
-        3. Historical Journey: Goal=Show Change. Method=HTML/CSS horizontal timeline. Interaction=Hover effects. Justification=Provides a clear, chronological visualization of the parable's spread across cultures.
-        4. Artistic Legacy: Goal=Organize. Method=HTML/CSS Grid. Interaction=None. Justification=A clean, straightforward gallery for the referenced manuscripts.
+        1. Core Parable Elements: Goal=Inform. Method=Interactive HTML/CSS grid of clickable elements with detail panel. Interaction=Clicking an element reveals its description. Justification=Visually represents the scene, more engaging than a simple list, fits within a linear flow.
+        2. Comparative Analysis: Goal=Compare. Method=Chart.js Radar Chart. Interaction=Dropdown menu to select a tradition, dynamically updating the chart and a detailed text panel. Justification=Radar charts are excellent for showing multivariate comparisons, making it easy to see how symbolic profiles differ. Library=Chart.js.
+        3. Historical Journey: Goal=Show Change. Method=HTML/CSS horizontal timeline. Interaction=Hover effects for readability. Justification=Provides a clear, chronological visualization of the parable's spread across cultures without requiring complex JS.
     -->
     <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
@@ -23,10 +22,7 @@
             font-family: 'Inter', sans-serif;
             background-color: #FDFBF8;
             color: #4A4A4A;
-        }
-        .nav-active {
-            color: #D97706;
-            font-weight: 600;
+            line-height: 1.6;
         }
         .chart-container {
             position: relative;
@@ -50,10 +46,16 @@
         }
         .symbol-item {
             cursor: pointer;
-            transition: transform 0.2s ease-in-out;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background-color: #f9f9f9;
+            border: 1px solid #e5e5e5;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
         }
         .symbol-item:hover {
-            transform: scale(1.05);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .timeline-item::before {
             content: '';
@@ -66,6 +68,7 @@
             background-color: #D97706;
             border-radius: 9999px;
             border: 3px solid #FDFBF8;
+            z-index: 1;
         }
         .timeline-line {
             position: absolute;
@@ -74,172 +77,141 @@
             right: 0;
             height: 2px;
             background-color: #E5E7EB;
-            z-index: -1;
+            z-index: 0;
         }
     </style>
 </head>
 <body class="antialiased">
 
-    <header id="header" class="bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50">
-        <nav class="container mx-auto px-6 py-3 flex justify-between items-center">
-            <h1 class="text-xl font-bold text-amber-700">The Parable Explorer</h1>
-            <div class="hidden md:flex space-x-8">
-                <a href="#intro" class="nav-link">Introduction</a>
-                <a href="#parable" class="nav-link">The Parable</a>
-                <a href="#comparison" class="nav-link">Comparison</a>
-                <a href="#journey" class="nav-link">Journey</a>
-                <a href="#conclusion" class="nav-link">Conclusion</a>
-            </div>
-            <button id="mobile-menu-button" class="md:hidden p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-amber-600">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
-                </svg>
-            </button>
-        </nav>
-        <div id="mobile-menu" class="md:hidden hidden px-6 pt-2 pb-4 space-y-2">
-             <a href="#intro" class="block nav-link">Introduction</a>
-             <a href="#parable" class="block nav-link">The Parable</a>
-             <a href="#comparison" class="block nav-link">Comparison</a>
-             <a href="#journey" class="block nav-link">Journey</a>
-             <a href="#conclusion" class="block nav-link">Conclusion</a>
+    <header class="w-full bg-white/80 backdrop-blur-md shadow-sm sticky top-0 z-50 py-4">
+        <div class="container mx-auto px-6 text-center">
+            <h1 class="text-3xl md:text-4xl font-bold text-amber-900 mb-1">The Parable of the Man in the Well</h1>
+            <p class="text-lg text-gray-600">An Interactive Exploration of a Timeless Allegory</p>
         </div>
     </header>
 
-    <main>
-        <section id="intro" class="min-h-screen flex items-center bg-amber-50/50">
-            <div class="container mx-auto px-6 py-12 text-center">
-                <h2 class="text-4xl md:text-5xl font-bold text-amber-900 mb-4">The Parable of the Man in the Well</h2>
-                <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-                    Explore a timeless allegory that has journeyed across continents and centuries. This interactive experience delves into the parable's profound symbols and varied interpretations across major world traditions, from its ancient origins in India to its adaptation in the West.
-                </p>
-                <a href="#parable" class="bg-amber-600 text-white font-bold py-3 px-8 rounded-full hover:bg-amber-700 transition-colors">Begin Exploration</a>
+    <main class="container mx-auto px-6 py-8 max-w-4xl bg-white rounded-lg shadow-md mb-12">
+        <section id="intro" class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Introduction: A Dream's Resonance</h2>
+            <p class="text-lg text-gray-700 mb-6">
+                Have you ever had a dream so vivid, so rich in symbolism, that it felt like it was telling you a profound truth about life? The story of a man in a desert, chased by a lion, finding a well, clinging to a rope, observing rats gnawing at it, a snake below, and tasting honey—this powerful imagery has resonated with countless individuals across centuries and cultures. This interactive blog post delves into this ancient parable, exploring its origins, its enduring symbols, and how its meaning has been interpreted across major world traditions.
+            </p>
+            <p class="text-lg text-gray-700">
+                Join us as we uncover the layers of wisdom embedded in this timeless allegory, revealing how its message about life, death, time, and distraction remains remarkably relevant today.
+            </p>
+        </section>
+
+        <section id="parable" class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">The Core Narrative: Unpacking the Symbols</h2>
+            <p class="text-lg text-gray-700 mb-6">
+                At its heart, the parable is a concise and poignant narrative. To understand its deeper meanings, let's break down its key elements. Click on each symbol below to reveal its common allegorical interpretation, setting the stage for our comparative analysis across different traditions.
+            </p>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                <div class="symbol-item text-center" data-symbol="man">
+                    <div class="text-4xl mb-2">🚶</div>
+                    <h3 class="font-bold">The Man</h3>
+                </div>
+                <div class="symbol-item text-center" data-symbol="chasing_beast">
+                    <div class="text-4xl mb-2">🦁</div>
+                    <h3 class="font-bold">The Chasing Beast</h3>
+                </div>
+                <div class="symbol-item text-center" data-symbol="well">
+                    <div class="text-4xl mb-2">🕳️</div>
+                    <h3 class="font-bold">The Well</h3>
+                </div>
+                <div class="symbol-item text-center" data-symbol="rope">
+                    <div class="text-4xl mb-2">🌿</div>
+                    <h3 class="font-bold">The Rope / Root</h3>
+                </div>
+                <div class="symbol-item text-center" data-symbol="rats">
+                    <div class="text-4xl mb-2">🐀</div>
+                    <h3 class="font-bold">The Two Rats</h3>
+                </div>
+                <div class="symbol-item text-center" data-symbol="snake">
+                    <div class="text-4xl mb-2">🐍</div>
+                    <h3 class="font-bold">The Snake / Dragon</h3>
+                </div>
+                <div class="symbol-item text-center" data-symbol="honey">
+                    <div class="text-4xl mb-2">🍯</div>
+                    <h3 class="font-bold">The Honey</h3>
+                </div>
+            </div>
+
+            <div id="symbol-description" class="content-card rounded-lg p-6">
+                <h3 id="symbol-title" class="text-xl font-bold text-amber-800 mb-2">Select a Symbol Above</h3>
+                <p id="symbol-text" class="text-gray-700">Click on any of the parable elements above to see its general symbolic meaning. This forms the foundation for understanding the parable's enduring wisdom.</p>
             </div>
         </section>
 
-        <section id="parable" class="py-20 bg-white">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl font-bold text-gray-800">The Core Narrative</h2>
-                    <p class="mt-2 text-gray-600 max-w-2xl mx-auto">The parable tells of a man in a precarious situation, distracted by a fleeting pleasure. Click on each element of the story below to uncover its fundamental symbolic role in the allegory.</p>
-                </div>
+        <section id="comparison" class="mb-12 bg-amber-50/20 p-8 rounded-lg">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">A Global Perspective: Variations in Interpretation</h2>
+            <p class="text-lg text-gray-700 mb-6">
+                While the core elements of the parable remain constant, their symbolic meanings subtly shift across different cultures and religious traditions. This adaptability is what gives the story its incredible longevity and universal appeal. Use the dropdown below to compare how various traditions—from your described dream to Buddhist, Hindu, Islamic, and Christian teachings—interpret the parable's profound message.
+            </p>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div id="interactive-parable" class="md:col-span-2 p-8 rounded-lg bg-gray-50 border border-gray-200 flex flex-col items-center justify-center space-y-4 min-h-[400px]">
-                         <div class="symbol-item text-center" data-symbol="man">
-                            <div class="text-4xl mb-2">🚶</div>
-                            <h3 class="font-bold">The Man</h3>
-                        </div>
-                        <div class="symbol-item text-center" data-symbol="chasing_beast">
-                            <div class="text-4xl mb-2">🦁</div>
-                            <h3 class="font-bold">The Chasing Beast</h3>
-                        </div>
-                        <div class="symbol-item text-center" data-symbol="well">
-                            <div class="text-4xl mb-2">🕳️</div>
-                            <h3 class="font-bold">The Well</h3>
-                        </div>
-                        <div class="symbol-item text-center" data-symbol="rope">
-                            <div class="text-4xl mb-2">🌿</div>
-                            <h3 class="font-bold">The Rope / Root</h3>
-                        </div>
-                         <div class="symbol-item text-center" data-symbol="rats">
-                            <div class="text-4xl mb-2">🐀</div>
-                            <h3 class="font-bold">The Two Rats</h3>
-                        </div>
-                        <div class="symbol-item text-center" data-symbol="snake">
-                            <div class="text-4xl mb-2">🐍</div>
-                            <h3 class="font-bold">The Snake / Dragon</h3>
-                        </div>
-                         <div class="symbol-item text-center" data-symbol="honey">
-                            <div class="text-4xl mb-2">🍯</div>
-                            <h3 class="font-bold">The Honey</h3>
-                        </div>
-                    </div>
-
-                    <div id="symbol-description" class="content-card rounded-lg p-6">
-                        <h3 id="symbol-title" class="text-xl font-bold text-amber-800 mb-2">Select a Symbol</h3>
-                        <p id="symbol-text" class="text-gray-700">Click on an element from the parable to the left to see its general meaning. This interactive tool provides a foundation before exploring how these interpretations vary across different cultures in the next section.</p>
-                    </div>
-                </div>
+            <div class="flex justify-center mb-8">
+                <select id="tradition-selector" class="block w-full max-w-xs p-3 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500">
+                    <option value="dream">Your Described Dream</option>
+                    <option value="buddhist">Buddhist Interpretation</option>
+                    <option value="hindu">Hindu Interpretation</option>
+                    <option value="islamic">Islamic Interpretation</option>
+                    <option value="christian">Christian Interpretation</option>
+                </select>
             </div>
-        </section>
-
-        <section id="comparison" class="py-20 bg-amber-50/50">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-12">
-                    <h2 class="text-3xl font-bold text-gray-800">A Comparative Analysis</h2>
-                    <p class="mt-2 text-gray-600 max-w-2xl mx-auto">The parable's genius lies in its flexibility. While the core elements are stable, their symbolic meanings shift across traditions. Select a tradition from the dropdown to see its unique interpretation of the parable visualized.</p>
-                </div>
-
-                <div class="flex justify-center mb-8">
-                    <select id="tradition-selector" class="block w-full max-w-xs p-3 border border-gray-300 rounded-md shadow-sm focus:ring-amber-500 focus:border-amber-500">
-                        <option value="dream">Described Dream</option>
-                        <option value="buddhist">Buddhist</option>
-                        <option value="hindu">Hindu</option>
-                        <option value="islamic">Islamic</option>
-                        <option value="christian">Christian</option>
-                    </select>
-                </div>
-                
-                <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
-                    <div class="lg:col-span-2">
-                        <div class="chart-container mx-auto">
-                            <canvas id="comparisonChart"></canvas>
-                        </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-center">
+                <div class="lg:col-span-2">
+                    <div class="chart-container mx-auto">
+                        <canvas id="comparisonChart"></canvas>
                     </div>
-                    <div id="comparison-description" class="lg:col-span-3 content-card rounded-lg p-6">
-                        <h3 id="comparison-title" class="text-2xl font-bold text-amber-800 mb-4"></h3>
-                        <div id="comparison-text" class="space-y-3 text-gray-700"></div>
-                    </div>
+                </div>
+                <div id="comparison-description" class="lg:col-span-3 content-card rounded-lg p-6">
+                    <h3 id="comparison-title" class="text-2xl font-bold text-amber-800 mb-4"></h3>
+                    <div id="comparison-text" class="space-y-3 text-gray-700"></div>
                 </div>
             </div>
         </section>
 
-        <section id="journey" class="py-20 bg-white">
-            <div class="container mx-auto px-6">
-                <div class="text-center mb-16">
-                    <h2 class="text-3xl font-bold text-gray-800">The Journey of a Story</h2>
-                    <p class="mt-2 text-gray-600 max-w-2xl mx-auto">From ancient India to medieval Europe, the parable traveled along trade routes and through scholarly exchange, adapting to new cultures and languages while retaining its core message.</p>
-                </div>
+        <section id="journey" class="mb-12">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">The Journey of a Story: A Historical Timeline</h2>
+            <p class="text-lg text-gray-700 mb-6">
+                The parable's power is not just in its meaning, but also in its incredible journey. Originating in ancient India, it traveled across continents, adapting and flourishing in new cultural and religious landscapes. This timeline highlights its key milestones and adaptations.
+            </p>
 
-                <div class="relative w-full">
-                    <div class="timeline-line"></div>
-                    <div class="flex justify-between items-center text-center">
-                        <div class="w-1/4 relative timeline-item px-2">
-                            <h4 class="font-bold mb-1">2nd-3rd Century CE</h4>
-                            <p class="text-sm text-gray-600">Origins in India. Earliest evidence in Buddhist reliefs.</p>
-                        </div>
-                        <div class="w-1/4 relative timeline-item px-2">
-                            <h4 class="font-bold mb-1">6th-8th Century CE</h4>
-                            <p class="text-sm text-gray-600">Appears in Hindu (*Mahabharata*) and Jaina texts.</p>
-                        </div>
-                        <div class="w-1/4 relative timeline-item px-2">
-                            <h4 class="font-bold mb-1">8th-12th Century CE</h4>
-                            <p class="text-sm text-gray-600">Transmitted via Persia, appears in the Islamic world (*Kalila wa Dimna*).</p>
-                        </div>
-                        <div class="w-1/4 relative timeline-item px-2">
-                            <h4 class="font-bold mb-1">11th Century CE & Beyond</h4>
-                            <p class="text-sm text-gray-600">Reaches Christian Europe through the popular novel *Barlaam and Ioasaph*.</p>
-                        </div>
+            <div class="relative w-full overflow-x-auto pb-4">
+                <div class="timeline-line"></div>
+                <div class="flex justify-between items-start text-center min-w-[768px]">
+                    <div class="w-1/4 relative timeline-item px-2">
+                        <h4 class="font-bold mb-1 text-gray-800">2nd-3rd Century CE</h4>
+                        <p class="text-sm text-gray-600">Earliest evidence in Buddhist reliefs in India.</p>
+                    </div>
+                    <div class="w-1/4 relative timeline-item px-2">
+                        <h4 class="font-bold mb-1 text-gray-800">6th-8th Century CE</h4>
+                        <p class="text-sm text-gray-600">Versions appear in Hindu (*Mahabharata*) and Jaina texts.</p>
+                    </div>
+                    <div class="w-1/4 relative timeline-item px-2">
+                        <h4 class="font-bold mb-1 text-gray-800">8th-12th Century CE</h4>
+                        <p class="text-sm text-gray-600">Transmitted via Persia, appearing in the Islamic world (*Kalila wa Dimna*).</p>
+                    </div>
+                    <div class="w-1/4 relative timeline-item px-2">
+                        <h4 class="font-bold mb-1 text-gray-800">11th Century CE & Beyond</h4>
+                        <p class="text-sm text-gray-600">Reaches Christian Europe through the popular novel *Barlaam and Ioasaph*.</p>
                     </div>
                 </div>
             </div>
         </section>
 
-        <section id="conclusion" class="py-20 bg-amber-50/50">
-            <div class="container mx-auto px-6 text-center">
-                <h2 class="text-3xl font-bold text-amber-900 mb-4">An Enduring Legacy</h2>
-                <p class="text-lg text-gray-600 max-w-3xl mx-auto">
-                    The parable of the man in the well is more than just a story; it's a mirror reflecting universal human anxieties about life, death, time, and distraction. Its ability to adapt across diverse religious and philosophical landscapes—from Buddhist concepts of impermanence to Christian allegories of salvation—highlights its profound and timeless relevance. The journey of this narrative confirms its power to convey complex truths through simple, unforgettable imagery, making it a perfect vessel for contemplation and creative adaptation today.
-                </p>
-            </div>
+        <section id="conclusion">
+            <h2 class="text-3xl font-bold text-gray-800 mb-4">Conclusion: An Enduring Legacy</h2>
+            <p class="text-lg text-gray-700 mb-4">
+                The parable of the man in the well is a powerful testament to the human condition, offering a universal lens through which to examine life's impermanence, the relentless march of time, the inevitability of death, and the seductive nature of fleeting distractions. Its ability to adapt and resonate across diverse religious and philosophical landscapes speaks volumes about its profound and timeless relevance.
+            </p>
+            <p class="text-lg text-gray-700">
+                Whether interpreted through ancient Buddhist wisdom, Hindu spiritual insights, Islamic allegories of the grave, or Christian narratives of salvation, the core message remains: life is precious, time is short, and it's easy to lose sight of what truly matters amidst worldly pleasures. This enduring narrative, with its rich history and adaptable symbolism, continues to serve as a potent tool for self-reflection and contemplation in our modern world.
+            </p>
         </section>
     </main>
-    
-    <footer class="bg-gray-800 text-white py-6">
-        <div class="container mx-auto px-6 text-center">
-            <p>&copy; 2024 Parable Explorer. An interactive adaptation of a timeless story.</p>
-        </div>
-    </footer>
 
     <script>
         const parableData = {
@@ -254,7 +226,7 @@
 
         const comparisonData = {
             dream: {
-                title: 'Described Dream Interpretation',
+                title: 'Your Described Dream Interpretation',
                 data: {
                     'Chasing Beast': 'Fate to get born',
                     'Well/Pit': 'A literal well',
@@ -342,7 +314,7 @@
                 const chartLabels = [];
                 const chartDataPoints = [];
 
-                for (const [key, value] of Object.entries(tradition.data)) {
+                for (const [key, value] of Object.entries(tradition.data)) { // Changed `=>` to `of`
                     textHtml += `<p><strong>${key}:</strong> ${value}</p>`;
                     chartLabels.push(key);
                     chartDataPoints.push(value); 
@@ -353,6 +325,9 @@
                     comparisonChart.destroy();
                 }
 
+                // This object maps a simplified interpretation to a numeric value for the radar chart axis.
+                // The values are arbitrary, but help visualize how different elements are interpreted
+                // (e.g., 'Death' might be a higher existential threat than 'A literal well').
                 const dataValues = {
                     "Fate to get born": 1, "A literal well": 2, "Lifetime": 3, "Day and night": 4, "Death": 5, "Distractions in life": 6,
                     "Impermanence": 1, "Samsara (cycle of rebirth)": 2, "Life / Being": 3, "Decay of thought": 4, "Suffering of death": 5, "The five desires": 6,
@@ -362,6 +337,8 @@
                 };
 
                 const numericData = chartDataPoints.map(label => {
+                    // Find a match based on the first word or significant keyword in the interpretation
+                    // This is a heuristic to map text interpretations to numerical values for the chart.
                     const foundVal = Object.entries(dataValues).find(([key, val]) => label.includes(key.split(" ")[0]));
                     return foundVal ? foundVal[1] : 0;
                 });
@@ -373,8 +350,8 @@
                         datasets: [{
                             label: tradition.title,
                             data: numericData,
-                            backgroundColor: 'rgba(217, 119, 6, 0.2)',
-                            borderColor: 'rgba(217, 119, 6, 1)',
+                            backgroundColor: 'rgba(217, 119, 6, 0.2)', // Light amber fill
+                            borderColor: 'rgba(217, 119, 6, 1)',    // Darker amber line
                             pointBackgroundColor: 'rgba(217, 119, 6, 1)',
                             pointBorderColor: '#fff',
                             pointHoverBackgroundColor: '#fff',
@@ -382,37 +359,53 @@
                         }]
                     },
                     options: {
-                        maintainAspectRatio: false,
+                        maintainAspectRatio: false, // Allows chart to respect container dimensions
                         responsive: true,
                         scales: {
                             r: {
                                 angleLines: {
-                                    color: 'rgba(0, 0, 0, 0.1)'
+                                    color: 'rgba(0, 0, 0, 0.1)' // Light grey for angle lines
                                 },
                                 grid: {
-                                    color: 'rgba(0, 0, 0, 0.1)'
+                                    color: 'rgba(0, 0, 0, 0.1)' // Light grey for grid lines
                                 },
                                 pointLabels: {
                                     font: {
                                         size: 12
                                     },
-                                    color: '#4A4A4A'
+                                    color: '#4A4A4A', // Dark grey for labels
+                                    callback: function(label) {
+                                        // Wrap labels if they are too long
+                                        const maxLength = 16;
+                                        if (label.length > maxLength) {
+                                            return label.split(' ').reduce((acc, word) => {
+                                                if ((acc[acc.length - 1] + ' ' + word).length <= maxLength) {
+                                                    acc.push(word);
+                                                } else {
+                                                    acc.push(word);
+                                                }
+                                                return acc;
+                                            }, ['']);
+                                        }
+                                        return label;
+                                    }
                                 },
                                 ticks: {
-                                    display: false,
+                                    display: false, // Hide numeric ticks for cleaner look
                                     stepSize: 1
                                 },
-                                suggestedMin: 0,
-                                suggestedMax: 7,
+                                suggestedMin: 0, // Minimum value on the radar axis
+                                suggestedMax: 7, // Maximum value on the radar axis (adjust based on dataValues range)
                             }
                         },
                         plugins: {
                             legend: {
-                                display: false
+                                display: false // Hide dataset legend
                             },
                              tooltip: {
                                 enabled: true,
                                 callbacks: {
+                                    // Display the actual interpretation text in the tooltip
                                     label: function(context) {
                                         return tradition.data[context.label];
                                     }
@@ -424,45 +417,19 @@
             }
             
             traditionSelector.addEventListener('change', (e) => updateComparison(e.target.value));
+            // Initialize with the 'Your Described Dream' interpretation on load
             updateComparison('dream');
-
-            const mobileMenuButton = document.getElementById('mobile-menu-button');
-            const mobileMenu = document.getElementById('mobile-menu');
-            mobileMenuButton.addEventListener('click', () => {
-                mobileMenu.classList.toggle('hidden');
-            });
             
-            const navLinks = document.querySelectorAll('.nav-link');
-            const sections = document.querySelectorAll('main > section');
-
-            const observerOptions = {
-                root: null,
-                rootMargin: "0px",
-                threshold: 0.5
-            };
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        const navId = entry.target.id;
-                        navLinks.forEach(link => {
-                            link.classList.toggle('nav-active', link.getAttribute('href') === `#${navId}`);
-                        });
-                    }
-                });
-            }, observerOptions);
-
-            sections.forEach(section => {
-                observer.observe(section);
-            });
-            
+            // Simplified navigation for a blog post (internal links, not sticky)
+            const navLinks = document.querySelectorAll('a[href^="#"]'); // Select all internal anchor links
             navLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
-                    if (mobileMenu.classList.contains('hidden') === false) {
-                        mobileMenu.classList.add('hidden');
-                    }
-                })
-            })
+                    // Smooth scroll to section
+                    e.preventDefault();
+                    const targetId = e.target.getAttribute('href');
+                    document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+                });
+            });
         });
     </script>
 </body>
